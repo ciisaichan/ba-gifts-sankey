@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+
+<head>
+  <meta charset="utf-8">
+  <title>碧蓝档案 角色/礼物 关系图</title>
+
+  <style type="text/css">
+    body {
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    body::-webkit-scrollbar {
+      display: none;
+    }
+
+    #title-div {
+      text-align: center;
+      padding-top: 20px;
+    }
+
+    #bottom-div {
+      text-align: center;
+      padding-bottom: 30px;
+    }
+
+    #main-title {
+      color: #484848;
+      font-weight: lighter;
+    }
+
+    #sub-title {
+      color: #777981;
+      font-weight: lighter;
+    }
+
+    #sub-title img{
+      padding-left: 10px;
+    }
+
+    #bottom-text {
+      color: #484848;
+      font-weight: lighter;
+    }
+
+    #tooltip-box {
+      display: flex;
+      align-items: center;
+    }
+
+    #tooltip-box p {
+      padding-left: 10px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+
+<body style="height: 100%; margin: 0;">
+  <div id="title-div">
+    <h1 id="main-title">碧蓝档案 角色/礼物 关系图</h1>
+    <h3 id="sub-title">细线 表示<img alt="喜欢" src="https://patchwiki.biligame.com/images/bluearchive/thumb/d/df/54ek4xrjye1l4we84xcfox5uvr5pspe.png/40px-Cafe_Interaction_Gift_02.png"/>，粗线 表示<img alt="非常喜欢" src="https://patchwiki.biligame.com/images/bluearchive/thumb/5/51/3xpg0xh6ekyllnmb73mapsgt1m44bks.png/40px-Cafe_Interaction_Gift_03.png"/>，已排除无礼物喜好的学生以及通用的 SSR 4 礼物</h3>
+  </div>
+  <div id="container" style="height: 400%"></div>
+
+  <div id="bottom-div">
+    <h4 id="bottom-text">数据来源：https://wiki.biligame.com | 数据整理：小陈菌 | 修订日期：2022/5/26</h4>
+  </div>
+
+  <script type="text/javascript" src="https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.staticfile.org/echarts/5.3.2/echarts.min.js"></script>
+
+  <script type="text/javascript">
+    var dom = document.getElementById("container");
+    var baChart = echarts.init(dom);
+
+    var ROOT_PATH = location.href.substring(0, location.href.lastIndexOf('/'));
+    var icons_map;
+    var sankey_option;
+
+    baChart.showLoading();
+    $.get(ROOT_PATH + '/data/icons_map.json', function (data) {
+      icons_map = data;
+    });
+
+    $.get(ROOT_PATH + '/data/links.json', function (data) {
+      baChart.hideLoading();
+
+      baChart.setOption((
+        sankey_option = {
+          tooltip: {
+            trigger: 'item',
+            formatter: function (params, ticket, callback) {
+              if (params.dataType === 'node') {
+                return '<div id="tooltip-box"><img width="80px" src="' + icons_map[params.data.name] + '"/></div>'
+              } else if (params.dataType === 'edge') {
+                return '<div id="tooltip-box"><img width="80px" src="' + icons_map[params.data.source] + '"/><img style="padding-left: 10px;" width="40px" src="' + icons_map[params.data.value] + '"/> <p> > </p> <img width="80px" src="' + icons_map[params.data.target] + '"/></div>'
+              }
+            }
+          },
+          series: {
+            type: 'sankey',
+            layout: 'none',
+            left: 50.0,
+            right: 300.0,
+            top: 10.0,
+            bottom: 10.0,
+            emphasis: {
+              focus: 'adjacency'
+            },
+            lineStyle: {
+              color: 'gradient',
+              curveness: 0.5
+            },
+            data: data.nodes,
+            links: data.links,
+          }
+        })
+      );
+    });
+
+    sankey_option && baChart.setOption(sankey_option);
+
+  </script>
+</body>
+
+</html>
